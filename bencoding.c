@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "bencoding.h"
 
@@ -76,6 +77,20 @@ bencoding_t* read_dict(FILE* stream) {
     return ret;
 }
 
+bencoding_t* find_in_dict(bencoding_t* b, char* key) {
+    if (b->type != B_DICT) {
+        return NULL;
+    }
+    dict_t* p = b->data.b_dict;
+    while (p) {
+        if (strcmp(key, p->key) == 0) {
+            return p->data;
+        }
+        p = p->next;
+    }
+    return NULL;
+}
+
 void print_string(bencoding_t* b) {
     printf("\"%s\"\n", b->data.b_string);
 }
@@ -117,11 +132,4 @@ void print_bencoding(bencoding_t* b) {
         default:
             print_dict(b);
     }
-}
-
-int main(int argc, char *argv[])
-{
-    FILE* stream = fopen(argv[1], "r");
-    print_bencoding(read_bencoding(stream));
-    return 0;
 }

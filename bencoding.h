@@ -35,6 +35,9 @@ bencoding_t* read_string(FILE*);
 bencoding_t* read_int(FILE*);
 bencoding_t* read_list(FILE*);
 bencoding_t* read_dict(FILE*);
+
+bencoding_t* find_in_dict(bencoding_t*, char*);
+
 void print_bencoding(bencoding_t*);
 
 #endif
