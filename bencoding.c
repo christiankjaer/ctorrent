@@ -20,12 +20,12 @@ bencoding_t* read_bencoding(FILE* stream) {
 bencoding_t* read_string(FILE* stream) {
     int size;
     fscanf(stream, "%d:", &size);
-    char* data = (char*)malloc(sizeof(char) * (size+1));
+    char* data = (char*)malloc(sizeof(char) * size);
     fread(data, sizeof(char), size, stream);
-    data[size] = '\0';
     bencoding_t* ret = (bencoding_t*)malloc(sizeof(bencoding_t));
     ret->type = B_STRING;
-    ret->data.b_string = data;
+    ret->data.b_string.buffer = data;
+    ret->data.b_string.size = size;
     return ret;
 }
 bencoding_t* read_int(FILE* stream) {
@@ -88,11 +88,21 @@ bencoding_t* find_in_dict(bencoding_t* b, char* key) {
         }
         p = p->next;
     }
-    return NULL;
+    return p->data;
+}
+
+int get_pieces(bencoding_t* b, char** p) {
+    bencoding_t* ben = find_in_dict(find_in_dict(b, "info"), "pieces");
+    *p = ben->data.b_string.buffer;
+    return ben->data.b_string.size;
 }
 
 void print_string(bencoding_t* b) {
-    printf("\"%s\"\n", b->data.b_string);
+    putchar('\"');
+    for (int i = 0; i < b->data.b_string.size; ++i) {
+        putchar(b->data.b_string.buffer[i]);
+    }
+    putchar('\"');
 }
 void print_int(bencoding_t* b) {
     printf("%d\n", b->data.b_int);

@@ -8,4 +8,4 @@ ctorrent:
 	$(CC) $(CFLAGS) ctorrent.c bencoding.c -o ctorrent
 
 clean:
-	rm *o ctorrent
+	rm ctorrent
