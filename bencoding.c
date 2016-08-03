@@ -3,7 +3,12 @@
 
 #include "bencoding.h"
 
+/* The format is unambiguous, and we can decide
+ * whatever the type is by reading the next
+ * character
+ */
 bencoding_t* read_bencoding(FILE* stream) {
+    /* Get one character from the input */
     char c = fgetc(stream);
     switch (c) {
         case 'i': 
@@ -19,10 +24,16 @@ bencoding_t* read_bencoding(FILE* stream) {
 }
 bencoding_t* read_string(FILE* stream) {
     int size;
+    /* First element is the length of the string */
     fscanf(stream, "%d:", &size);
+    /* We allocate an array of that size */
     char* data = (char*)malloc(sizeof(char) * size);
+    /* We then read that amount of chars from the
+     * input stream */
     fread(data, sizeof(char), size, stream);
+    /* We allocate a bencoding struct */
     bencoding_t* ret = (bencoding_t*)malloc(sizeof(bencoding_t));
+    /* And sets the properties */
     ret->type = B_STRING;
     ret->data.b_string.buffer = data;
     ret->data.b_string.size = size;
@@ -42,11 +53,16 @@ bencoding_t* read_list(FILE* stream) {
     ret->data.b_list = NULL;
     node_t** pp = &ret->data.b_list;
     char c;
+    /* We read data until we reach an 'e', which
+     * is the end of the list */
     while ((c = fgetc(stream)) != 'e') {
         ungetc(c, stream);
+        /* read the element in the list recursively */
         bencoding_t* data = read_bencoding(stream);
+        /* Allocate the new element in the list */
         node_t* elem = (node_t*)malloc(sizeof(node_t));
         elem->data = data;
+        /* Pointer magic */
         elem->next = NULL;
         *pp = elem;
         pp = &elem->next;
@@ -77,6 +93,10 @@ bencoding_t* read_dict(FILE* stream) {
     return ret;
 }
 
+/* Looks up a value in a dict.
+ * Returns NULL if b is not a dict
+ * Returns b if the key is not found
+ */
 bencoding_t* find_in_dict(bencoding_t* b, char* key) {
     if (b->type != B_DICT) {
         return NULL;

@@ -1,21 +1,26 @@
 #include <stdio.h>
+#include <string.h>
 #include <curl/curl.h>
+#include <openssl/sha.h>
 #include "bencoding.h"
+
+char* peer_id = "minegentorrentdeadde";
 
 int main(int argc, char *argv[])
 {
     FILE* stream = fopen(argv[1], "r");
     bencoding_t* metainfo = read_bencoding(stream);
+    fclose(argv[1]);
+
+    char info_hash[21];
+
+    
 
     bencoding_t* ann = find_in_dict(metainfo, "announce");
-    char* pieces = NULL;
-    int n = get_pieces(metainfo, &pieces);
 
-    printf("Piecelength: %d\n", n);
-    for (int i = 0; i < 20; ++i) {
-        printf("%%%02X", (int) pieces[i]+128);
-    }
-    putchar('\n');
+    char url[1024];
+    memcpy(url, ann->data.b_string.buffer, ann->data.b_string.size);
+    url[ann->data.b_string.size] = '\0';
 
     CURL *curl;
     CURLcode res;
@@ -23,13 +28,17 @@ int main(int argc, char *argv[])
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
     curl = curl_easy_init();
+    char* hash = curl_easy_escape(curl, piece, 20);
+    char req_string[1024];
+    snprintf(req_string, 1024, "%s?info_hash=%s&peer_id=%s&port=%d&downloaded=0&uploaded=0&left=1234789", url, hash, peer_id, 6881);
+    puts(req_string);
     if (curl) {
-        curl_easy_setopt(curl, CURLOPT_URL, "http://google.dk");
+        curl_easy_setopt(curl, CURLOPT_URL, req_string);
         res = curl_easy_perform(curl);
         if (res != CURLE_OK)
           fprintf(stderr, "curl_easy_perform() failed: %s\n",
               curl_easy_strerror(res));
- 
+
     /* always cleanup */ 
     curl_easy_cleanup(curl);
   }
