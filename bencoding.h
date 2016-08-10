@@ -58,4 +58,8 @@ int get_pieces(bencoding_t*, char**);
 
 void print_bencoding(bencoding_t*);
 
+void destroy_list(node_t*);
+void destroy_dict(dict_t*);
+void destroy_bencoding(bencoding_t*);
+
 #endif

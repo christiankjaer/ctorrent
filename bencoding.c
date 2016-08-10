@@ -163,3 +163,43 @@ void print_bencoding(bencoding_t* b) {
             print_dict(b);
     }
 }
+
+void destroy_list(node_t* list) {
+    node_t* next;
+    while (list != NULL) {
+        next = list->next;
+        destroy_bencoding(list->data);
+        free(list);
+        list = next;
+    }
+}
+
+void destroy_dict(dict_t* dict) {
+    dict_t* next;
+    while (dict != NULL) {
+        next = dict->next;
+        destroy_bencoding(dict->data);
+        free(dict->key);
+        free(dict);
+        dict = next;
+    }
+}
+
+void destroy_bencoding(bencoding_t* b) {
+    switch (b->type) {
+        case B_INT:
+            free(b);
+            break;
+        case B_STRING:
+            free(b->data.b_string.buffer);
+            free(b);
+            break;
+        case B_LIST:
+            destroy_list(b->data.b_list);
+            free(b);
+            break;
+        default:
+            destroy_dict(b->data.b_dict);
+            free(b);
+    }
+}

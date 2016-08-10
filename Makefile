@@ -1,6 +1,6 @@
 CC=gcc
 CLIBS=-lcurl
-CFLAGS= -Wall $(CLIBS)
+CFLAGS= -Wall $(CLIBS) -g
 DEPS=bencoding.h
 
 all: ctorrent
